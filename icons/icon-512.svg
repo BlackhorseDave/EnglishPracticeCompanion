@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="Flight Utility icon">
+  <rect width="512" height="512" rx="112" fill="#111827"/>
+  <path d="M256 80l35 144 121 67-99 21-57 120-57-120-99-21 121-67 35-144z" fill="#ffffff"/>
+  <path d="M256 131l22 112 67 35-67 14-22 75-22-75-67-14 67-35 22-112z" fill="#2563eb"/>
+</svg>

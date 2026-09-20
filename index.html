@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>English Practice Companion</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#2563eb">
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+  <main class="app">
+    <header>
+      <h1>English Practice</h1>
+      <p id="progress">Sentence 1 of 100</p>
+    </header>
+
+    <section class="practice-card">
+      <p class="instruction">Read the sentence aloud</p>
+
+      <p id="practice-sentence">
+        Could you please give me a moment to think about that?
+      </p>
+
+      <div class="main-controls">
+        <button id="listen-button" type="button">
+          🔊 Listen
+        </button>
+
+        <button id="speak-button" type="button">
+          🎤 Speak
+        </button>
+      </div>
+
+      <section class="result-area">
+        <p class="result-label">The phone heard:</p>
+        <p id="recognized-text">Nothing yet</p>
+        <p id="feedback" aria-live="polite"></p>
+      </section>
+    </section>
+
+    <nav class="navigation-controls" aria-label="Sentence navigation">
+      <button id="previous-button" type="button">Previous</button>
+      <button id="repeat-button" type="button">Try Again</button>
+      <button id="next-button" type="button">Next</button>
+    </nav>
+  </main>
+
+  <script src="sentences.js"></script>
+  <script src="app.js"></script>
+</body>
+
+</html>
