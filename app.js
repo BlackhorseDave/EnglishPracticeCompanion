@@ -2,7 +2,8 @@ const practiceSentence = document.getElementById("practice-sentence");
 const progress = document.getElementById("progress");
 const recognizedText = document.getElementById("recognized-text");
 const feedback = document.getElementById("feedback");
-
+const differenceHelp = document.getElementById("difference-help");
+let encouragementIndex = 0;
 const listenButton = document.getElementById("listen-button");
 const speakButton = document.getElementById("speak-button");
 const previousButton = document.getElementById("previous-button");
@@ -28,6 +29,8 @@ function displaySentence() {
 
     recognizedText.textContent = "Nothing yet";
     feedback.textContent = "";
+    feedback.style.color = "#344054";
+    differenceHelp.hidden = true;
 }
 
 function speakSentence() {
@@ -80,9 +83,42 @@ function normalizeText(text) {
         .trim();
 }
 
+function tokenizeForComparison(text) {
+    const parts = text.split(/(\s+)/);
+    const words = [];
+
+    parts.forEach((part, index) => {
+        const normalized = normalizeText(part);
+
+        if (normalized) {
+            normalized.split(" ").forEach(word => {
+                words.push({ word, index });
+            });
+        }
+    });
+
+    return { parts, words };
+}
+function renderDifferences(element, tokens, differences) {
+    element.textContent = "";
+
+    tokens.parts.forEach((part, index) => {
+        if (differences.has(index)) {
+            const mark = document.createElement("mark");
+            mark.className = "difference";
+            mark.textContent = part;
+            element.appendChild(mark);
+        } else {
+            element.appendChild(document.createTextNode(part));
+        }
+    });
+}
+
 function calculateWordSimilarity(expected, spoken) {
-    const expectedWords = normalizeText(expected).split(" ");
-    const spokenWords = normalizeText(spoken).split(" ");
+    const expectedTokens = tokenizeForComparison(expected);
+    const spokenTokens = tokenizeForComparison(spoken);
+    const expectedWords = expectedTokens.words.map(token => token.word);
+    const spokenWords = spokenTokens.words.map(token => token.word);
 
     const rows = expectedWords.length + 1;
     const columns = spokenWords.length + 1;
@@ -114,6 +150,47 @@ function calculateWordSimilarity(expected, spoken) {
         }
     }
 
+    const expectedDifferences = new Set();
+    const spokenDifferences = new Set();
+
+    let row = expectedWords.length;
+    let column = spokenWords.length;
+
+    while (row > 0 || column > 0) {
+        if (
+            row > 0 &&
+            column > 0 &&
+            expectedWords[row - 1] === spokenWords[column - 1]
+        ) {
+            row -= 1;
+            column -= 1;
+        } else if (
+            row > 0 &&
+            column > 0 &&
+            distances[row][column] === distances[row - 1][column - 1] + 1
+        ) {
+            expectedDifferences.add(expectedTokens.words[row - 1].index);
+            spokenDifferences.add(spokenTokens.words[column - 1].index);
+            row -= 1;
+            column -= 1;
+        } else if (
+            row > 0 &&
+            distances[row][column] === distances[row - 1][column] + 1
+        ) {
+            expectedDifferences.add(expectedTokens.words[row - 1].index);
+            row -= 1;
+        } else {
+            spokenDifferences.add(spokenTokens.words[column - 1].index);
+            column -= 1;
+        }
+    }
+
+    renderDifferences(practiceSentence, expectedTokens, expectedDifferences);
+    renderDifferences(recognizedText, spokenTokens, spokenDifferences);
+
+    differenceHelp.hidden =
+        expectedDifferences.size === 0 && spokenDifferences.size === 0;
+
     const wordErrors =
         distances[expectedWords.length][spokenWords.length];
 
@@ -122,7 +199,7 @@ function calculateWordSimilarity(expected, spoken) {
         spokenWords.length
     );
 
-    return 1 - wordErrors / longestSentence;
+    return longestSentence > 0 ? 1 - wordErrors / longestSentence : 0;
 }
 
 function checkAnswer(transcript) {
@@ -132,11 +209,26 @@ function checkAnswer(transcript) {
         transcript
     );
 
-    if (similarity >= 0.8) {
-        feedback.textContent = "Well done — that was close enough!";
-        feedback.style.color = "#16845b";
+    if (!normalizeText(transcript)) {
+        feedback.textContent = "No words were heard — please try again.";
+        feedback.style.color = "#b54708";
+    } else if (similarity === 1) {
+        feedback.textContent = "Correct! — exact match";
+        feedback.style.color = "#116b48";
+    } else if (similarity >= 0.8) {
+        const encouragements = [
+            "Well done — that was close enough!",
+            "Good job — most words matched!",
+            "Nice work — that’s a pass!",
+            "Nearly there — just a small difference!"
+        ];
+
+        feedback.textContent =
+            encouragements[encouragementIndex % encouragements.length];
+        encouragementIndex += 1;
+        feedback.style.color = "#116b48";
     } else {
-        feedback.textContent = "Almost — try again.";
+        feedback.textContent = "Let’s try again — compare the yellow words.";
         feedback.style.color = "#b54708";
     }
 }
@@ -154,6 +246,9 @@ function startListening() {
     recognition.maxAlternatives = 1;
 
     recognition.onstart = function () {
+        practiceSentence.textContent = sentences[currentSentenceIndex];
+        differenceHelp.hidden = true;
+        feedback.style.color = "#344054";
         speakButton.textContent = "Listening…";
         recognizedText.textContent = "Listening…";
         feedback.textContent = "Speak the sentence now.";

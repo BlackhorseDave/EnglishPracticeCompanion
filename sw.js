@@ -1,4 +1,4 @@
-const CACHE_NAME = "english-practice-v1";
+const CACHE_NAME = "english-practice-v2";
 
 const APP_FILES = [
   "./",
@@ -27,7 +27,8 @@ self.addEventListener("activate", function (event) {
       return Promise.all(
         cacheNames
           .filter(function (cacheName) {
-            return cacheName !== CACHE_NAME;
+            return cacheName.startsWith("english-practice-") &&
+              cacheName !== CACHE_NAME;
           })
           .map(function (cacheName) {
             return caches.delete(cacheName);
