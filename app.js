@@ -11,6 +11,19 @@ const repeatButton = document.getElementById("repeat-button");
 const nextButton = document.getElementById("next-button");
 
 let currentSentenceIndex = 0;
+const sentenceOrder = sentences.map((_, index) => index);
+
+function shuffleSentenceOrder() {
+    for (let i = sentenceOrder.length - 1; i > 0; i -= 1) {
+        const randomIndex = Math.floor(Math.random() * (i + 1));
+        [sentenceOrder[i], sentenceOrder[randomIndex]] =
+            [sentenceOrder[randomIndex], sentenceOrder[i]];
+    }
+}
+
+function getCurrentSentence() {
+    return sentences[sentenceOrder[currentSentenceIndex]];
+}
 const SpeechRecognition =
     window.SpeechRecognition || window.webkitSpeechRecognition;
 
@@ -22,7 +35,7 @@ if (!SpeechRecognition) {
 }
 
 function displaySentence() {
-    practiceSentence.textContent = sentences[currentSentenceIndex];
+    practiceSentence.textContent = getCurrentSentence();
 
     progress.textContent =
         `Sentence ${currentSentenceIndex + 1} of ${sentences.length}`;
@@ -42,8 +55,7 @@ function speakSentence() {
     window.speechSynthesis.cancel();
 
     const speech = new SpeechSynthesisUtterance(
-        sentences[currentSentenceIndex]
-    );
+        getCurrentSentence());
 
     speech.lang = "en-US";
     speech.rate = 0.9;
@@ -203,7 +215,7 @@ function calculateWordSimilarity(expected, spoken) {
 }
 
 function checkAnswer(transcript) {
-    const expectedSentence = sentences[currentSentenceIndex];
+    const expectedSentence = getCurrentSentence();
     const similarity = calculateWordSimilarity(
         expectedSentence,
         transcript
@@ -246,7 +258,7 @@ function startListening() {
     recognition.maxAlternatives = 1;
 
     recognition.onstart = function () {
-        practiceSentence.textContent = sentences[currentSentenceIndex];
+        practiceSentence.textContent = getCurrentSentence();
         differenceHelp.hidden = true;
         feedback.style.color = "#344054";
         speakButton.textContent = "Listening…";
@@ -292,6 +304,7 @@ repeatButton.addEventListener("click", speakSentence);
 previousButton.addEventListener("click", showPreviousSentence);
 nextButton.addEventListener("click", showNextSentence);
 
+shuffleSentenceOrder();
 displaySentence();
 if ("serviceWorker" in navigator) {
     window.addEventListener("load", function () {
