@@ -1,4 +1,4 @@
-const CACHE_NAME = "english-practice-v4";
+const CACHE_NAME = "english-practice-v5";
 
 const APP_FILES = [
   "./",
