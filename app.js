@@ -273,6 +273,8 @@ function startListening() {
     recognition.onresult = function (event) {
         const transcript = event.results[0][0].transcript;
 
+        event.currentTarget.stop();
+
         recognizedText.textContent = transcript;
         checkAnswer(transcript);
     };
