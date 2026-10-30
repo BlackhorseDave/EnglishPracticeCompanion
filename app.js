@@ -251,6 +251,10 @@ function startListening() {
         return;
     }
 
+    if (recognition !== null) {
+        return;
+    }
+
     recognition = new SpeechRecognition();
     recognition.lang = "en-US";
     recognition.interimResults = false;
@@ -279,10 +283,18 @@ function startListening() {
     };
 
     recognition.onend = function () {
+        recognition = null;
         speakButton.textContent = "🎤 Speak";
     };
 
-    recognition.start();
+    try {
+        recognition.start();
+    } catch (error) {
+        recognition = null;
+        speakButton.textContent = "🎤 Speak";
+        recognizedText.textContent = "Nothing recognized";
+        feedback.textContent = "Could not start listening. Please tap Speak again.";
+    }
 }
 function showPreviousSentence() {
     if (currentSentenceIndex > 0) {
